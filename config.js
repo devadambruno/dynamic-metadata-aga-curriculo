@@ -1,5 +1,5 @@
 export const config = {
-  domainSource: "https://www.argologerenciadoraacervos.com.br", // Your WeWeb app preview link
+  domainSource: "https://argologerenciadoraacervos.com.br", // Your WeWeb app preview link
   patterns: [
       {
           pattern: "/perfilpublico/[^/]+",
