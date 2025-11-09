@@ -2,7 +2,7 @@ export const config = {
   domainSource: "https://www.argologerenciadoraacervos.com.br/", // Your WeWeb app preview link
   patterns: [
       {
-          pattern: "/paramCurriculo/[^/]+",
+          pattern: "/perfilpublico/[^/]+",
           metaDataEndpoint: "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/{paramuser}/metadata"
       },
       {
