@@ -36,23 +36,38 @@ export default {
       return pattern.test(url);
     }
 
-    async function requestMetadata(url, metaDataEndpoint) {
-      // Remove any trailing slash from the URL
-      const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-    
-      // Split the trimmed URL by '/' and get the last part: The id
-      const parts = trimmedUrl.split('/');
-      const id = parts[parts.length - 1];
-    
-      // Replace the placeholder in metaDataEndpoint with the actual id
-      const placeholderPattern = /{([^}]+)}/;
-      const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
-    
-      // Fetch metadata from the API endpoint
-      const metaDataResponse = await fetch(metaDataEndpointWithId);
-      const metadata = await metaDataResponse.json();
-      return metadata;
-    }
+async function requestMetadata(url, metaDataEndpoint) {
+  // Remove any trailing slash from the URL
+  const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  const parts = trimmedUrl.split('/');
+  const id = parts[parts.length - 1];
+
+  // Substitui o placeholder {paramuser} pelo ID real
+  const placeholderPattern = /{([^}]+)}/;
+  const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
+
+  console.log("🔗 Fetching metadata from:", metaDataEndpointWithId);
+
+  // Faz a requisição pro Xano
+  const metaDataResponse = await fetch(metaDataEndpointWithId);
+
+  if (!metaDataResponse.ok) {
+    console.log("❌ Metadata fetch failed:", metaDataResponse.status);
+    return {};
+  }
+
+  // Lê e retorna o JSON do Xano
+  const metadata = await metaDataResponse.json();
+  console.log("✅ Metadata received:", metadata);
+
+  // Garante que as propriedades existem (evita undefined)
+  return {
+    title: metadata.title || "",
+    description: metadata.description || "",
+    image: metadata.image || "",
+    keywords: metadata.keywords || ""
+  };
+}
 
     // Handle dynamic page requests
     const patternConfig = getPatternConfig(url.pathname);
