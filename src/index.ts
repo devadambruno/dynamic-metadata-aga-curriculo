@@ -60,8 +60,6 @@ async function requestMetadata(url, metaDataEndpoint) {
     const metadata = await metaDataResponse.json();
     console.log("✅ Metadata fetched:", metadata);
 
-    /return metadata; // <- volta a retornar direto o JSON como antes
-
 	if (metadata && metadata.return) {
   		return metadata.return;
 	}
