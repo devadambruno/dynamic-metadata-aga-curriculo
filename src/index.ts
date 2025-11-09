@@ -12,6 +12,12 @@ export default {
     const url = new URL(request.url);
     const referer = request.headers.get('Referer')
 
+	  // 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
+    if (url.searchParams.has("origin")) {
+      console.log("Bypass ativo — retornando conteúdo original da WeWeb");
+      return fetch(request);
+    }
+
     // Function to get the pattern configuration that matches the URL
     function getPatternConfig(url) {
       for (const patternConfig of patterns) {
