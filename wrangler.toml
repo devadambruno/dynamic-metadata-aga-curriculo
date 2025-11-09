@@ -6,12 +6,20 @@ compatibility_date = "2024-04-19"
 compatibility_flags = ["nodejs_compat"]
 
 
-[observability.logs]
+[observability]
+enabled = false
+head_sampling_rate = 1
 
+[observability.logs]
 enabled = true
 head_sampling_rate = 1
-invocation_logs = true
 persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Docs:
 # - https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
