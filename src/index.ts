@@ -48,7 +48,7 @@ async function requestMetadata(url, metaDataEndpoint) {
 
   console.log("🔗 Fetching metadata from:", metaDataEndpointWithId);
 
-  try {
+  try { 
     const metaDataResponse = await fetch(metaDataEndpointWithId, {
       method: "GET",
       headers: { "Accept": "application/json" }
