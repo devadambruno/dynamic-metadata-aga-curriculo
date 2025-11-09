@@ -1,5 +1,7 @@
 import { config } from '../config.js';
 
+
+/*
 export default {
   async fetch(request, env, ctx) {
     // Extracting configuration values
@@ -243,3 +245,90 @@ class CustomHeaderHandler {
     }
   }
 }
+*/
+
+export default {
+  async fetch(request, env, ctx) {
+    const domainSource = config.domainSource;
+    const patterns = config.patterns;
+
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+
+    // Função para achar padrão que casou
+    function getPatternConfig(path) {
+      for (const p of patterns) {
+        const regex = new RegExp(p.pattern);
+        if (regex.test(path)) {
+          return p;
+        }
+      }
+      return null;
+    }
+
+    const patternConfig = getPatternConfig(pathname);
+
+    if (patternConfig) {
+      // Página dinâmica que precisa de metadados
+      const metaResponse = await fetch(
+        patternConfig.metaDataEndpoint.replace(
+          /\{([^}]+)\}/,
+          (_, name) => encodeURIComponent(pathname.split('/').pop())
+        )
+      );
+      const metadata = await metaResponse.json();
+
+      // Buscar a página original
+      const originResponse = await fetch(`${domainSource}${pathname}`, request);
+      const headers = new Headers(originResponse.headers);
+      headers.delete('X-Robots-Tag');
+
+      // Reescrever HTML para injetar metadados
+      const rewriter = new HTMLRewriter()
+        .on('title', {
+          element(element) {
+            if (metadata.title) element.setInnerContent(metadata.title);
+          }
+        })
+        .on('meta[name="description"]', {
+          element(element) {
+            if (metadata.description) element.setAttribute('content', metadata.description);
+          }
+        })
+        .on('meta[property="og:title"]', {
+          element(element) {
+            if (metadata.title) element.setAttribute('content', metadata.title);
+          }
+        })
+        .on('meta[property="og:description"]', {
+          element(element) {
+            if (metadata.description) element.setAttribute('content', metadata.description);
+          }
+        })
+        .on('meta[property="og:image"]', {
+          element(element) {
+            if (metadata.image) element.setAttribute('content', metadata.image);
+          }
+        })
+        .on('meta[name="keywords"]', {
+          element(element) {
+            if (metadata.keywords) element.setAttribute('content', metadata.keywords);
+          }
+        });
+
+      return rewriter.transform(new Response(originResponse.body, {
+        status: originResponse.status,
+        headers,
+      }));
+    }
+
+    // Caso padrão: só retorna o conteúdo original sem modificação
+    const resp = await fetch(request);
+    const modifiedHeaders = new Headers(resp.headers);
+    modifiedHeaders.delete('X-Robots-Tag');
+    return new Response(resp.body, {
+      status: resp.status,
+      headers: modifiedHeaders,
+    });
+  }
+};
