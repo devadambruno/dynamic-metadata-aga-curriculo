@@ -37,37 +37,58 @@ export default {
     }
 
 async function requestMetadata(url, metaDataEndpoint) {
-  // Remove any trailing slash from the URL
-  const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-  const parts = trimmedUrl.split('/');
-  const id = parts[parts.length - 1];
+  try {
+    // Remove a barra final da URL e obtém o último segmento
+    const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    const parts = trimmedUrl.split('/');
+    const id = parts[parts.length - 1];
 
-  // Substitui o placeholder {paramuser} pelo ID real
-  const placeholderPattern = /{([^}]+)}/;
-  const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
+    // Substitui o placeholder {paramuser} pelo ID real
+    const placeholderPattern = /{([^}]+)}/;
+    const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
 
-  console.log("🔗 Fetching metadata from:", metaDataEndpointWithId);
+    console.log("🔗 Buscando metadata em:", metaDataEndpointWithId);
 
-  // Faz a requisição pro Xano
-  const metaDataResponse = await fetch(metaDataEndpointWithId);
+    // Faz a requisição para o Xano
+    const response = await fetch(metaDataEndpointWithId, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
 
-  if (!metaDataResponse.ok) {
-    console.log("❌ Metadata fetch failed:", metaDataResponse.status);
-    return {};
+    if (!response.ok) {
+      console.log("❌ Falha ao buscar metadata:", response.status, response.statusText);
+      return {
+        title: "",
+        description: "",
+        image: "",
+        keywords: ""
+      };
+    }
+
+    const data = await response.json();
+    console.log("✅ Metadata recebida:", data);
+
+    // Garante que o retorno tenha sempre as 4 propriedades
+    return {
+      title: data.title || "",
+      description: data.description || "",
+      image: data.image || "",
+      keywords: data.keywords || ""
+    };
+
+  } catch (err) {
+    console.log("❌ Erro na função requestMetadata:", err.message);
+    return {
+      title: "",
+      description: "",
+      image: "",
+      keywords: ""
+    };
   }
-
-  // Lê e retorna o JSON do Xano
-  const metadata = await metaDataResponse.json();
-  console.log("✅ Metadata received:", metadata);
-
-  // Garante que as propriedades existem (evita undefined)
-  return {
-    title: metadata.title || "",
-    description: metadata.description || "",
-    image: metadata.image || "",
-    keywords: metadata.keywords || ""
-  };
 }
+
 
     // Handle dynamic page requests
     const patternConfig = getPatternConfig(url.pathname);
