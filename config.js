@@ -14,7 +14,7 @@
 
 export const config = {
   // URL base do seu app publicado no WeWeb
-  domainSource: "https://www.argologerenciadoraacervos.com.br",
+  domainSource: "https://origin.argologerenciadoraacervos.com.br",
 
   patterns: [
     {
