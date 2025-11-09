@@ -4,7 +4,7 @@ export const config = {
   patterns: [
       {
           pattern: "/perfilpublico/[^/]+",
-		  metaDataEndpoint: "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/{paramCurriculo}/metadata"
+		  metaDataEndpoint: "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/{paramcurriculo}/metadata"
 		  //pattern: "^/perfilpublico/[^/]+/?$",
           //metaDataEndpoint: "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/{paramuser}/metadata"
       }
