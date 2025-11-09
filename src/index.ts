@@ -37,55 +37,34 @@ export default {
     }
 
 async function requestMetadata(url, metaDataEndpoint) {
+  // Remove trailing slash do final da URL (caso exista)
+  const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  const parts = trimmedUrl.split('/');
+  const id = parts[parts.length - 1];
+
+  // Substitui o placeholder {paramuser} pelo ID real
+  const placeholderPattern = /{([^}]+)}/;
+  const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
+
+  console.log("🔗 Fetching metadata from:", metaDataEndpointWithId);
+
   try {
-    // Remove a barra final da URL e obtém o último segmento
-    const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-    const parts = trimmedUrl.split('/');
-    const id = parts[parts.length - 1];
-
-    // Substitui o placeholder {paramuser} pelo ID real
-    const placeholderPattern = /{([^}]+)}/;
-    const metaDataEndpointWithId = metaDataEndpoint.replace(placeholderPattern, id);
-
-    console.log("🔗 Buscando metadata em:", metaDataEndpointWithId);
-
-    // Faz a requisição para o Xano
-    const response = await fetch(metaDataEndpointWithId, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
+    const metaDataResponse = await fetch(metaDataEndpointWithId, {
+      method: "GET",
+      headers: { "Accept": "application/json" }
     });
 
-    if (!response.ok) {
-      console.log("❌ Falha ao buscar metadata:", response.status, response.statusText);
-      return {
-        title: "",
-        description: "",
-        image: "",
-        keywords: ""
-      };
-    }
+    // Loga status da requisição
+    console.log("Metadata response status:", metaDataResponse.status);
 
-    const data = await response.json();
-    console.log("✅ Metadata recebida:", data);
+    const metadata = await metaDataResponse.json();
+    console.log("✅ Metadata fetched:", metadata);
 
-    // Garante que o retorno tenha sempre as 4 propriedades
-    return {
-      title: data.title || "",
-      description: data.description || "",
-      image: data.image || "",
-      keywords: data.keywords || ""
-    };
+    return metadata; // <- volta a retornar direto o JSON como antes
 
-  } catch (err) {
-    console.log("❌ Erro na função requestMetadata:", err.message);
-    return {
-      title: "",
-      description: "",
-      image: "",
-      keywords: ""
-    };
+  } catch (error) {
+    console.log("❌ Error fetching metadata:", error);
+    return {};
   }
 }
 
