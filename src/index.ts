@@ -159,12 +159,13 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
   safeMeta.image = safeMeta.image || "";
 
   // 🔧 Corrige imagem do domínio bloqueado para GCS
-  if (safeMeta.image.includes("api.argologerenciadoraacervos.com.br")) {
-    safeMeta.image = safeMeta.image.replace(
-      "https://api.argologerenciadoraacervos.com.br",
-      "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io"
-    );
-  }
+ // 🔧 Corrige imagem para usar o proxy do seu domínio
+if (safeMeta.image.includes("api.argologerenciadoraacervos.com.br") === false) {
+  safeMeta.image = safeMeta.image
+    .replace("https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/", 
+             "https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=");
+	}
+
 
   // 🔍 Detecta tipo de imagem dinamicamente
   const lowerImage = safeMeta.image.toLowerCase();
