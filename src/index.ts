@@ -97,6 +97,7 @@ async function requestMetadata(url, metaDataEndpoint) {
 
 	console.log("Metadata fetched:", metadata);
 
+	   /*	
 	  // 🔧 Corrige a URL da imagem (antes de injetar no HTML)
 	  if (metadata.image) {
 	    metadata.image = metadata.image
@@ -110,7 +111,7 @@ async function requestMetadata(url, metaDataEndpoint) {
 	  }
 	
 	  console.log("✅ Final image URL:", metadata.image);
-		
+	*/	
 		
       // Create a custom header handler with the fetched metadata
       const customHeaderHandler = new CustomHeaderHandler(metadata);
