@@ -1,7 +1,7 @@
 import { config } from '../config.js';
 
 
-/*
+
 export default {
   async fetch(request, env, ctx) {
     // Extracting configuration values
@@ -14,11 +14,11 @@ export default {
     const url = new URL(request.url);
     const referer = request.headers.get('Referer')
 
-	  // 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
+	 /* // 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
     if (url.searchParams.has("origin")) {
       console.log("Bypass ativo — retornando conteúdo original da WeWeb");
       return fetch(request);
-    }
+    }*/
 
     // Function to get the pattern configuration that matches the URL
     function getPatternConfig(url) {
@@ -245,7 +245,8 @@ class CustomHeaderHandler {
     }
   }
 }
-*/
+
+/*
 
 export default {
   async fetch(request, env, ctx) {
@@ -298,4 +299,4 @@ export default {
     modifiedHeaders.delete('X-Robots-Tag');
     return new Response(resp.body, { status: resp.status, headers: modifiedHeaders });
   }
-};
+}; */
