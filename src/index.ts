@@ -152,33 +152,44 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
     return new Response("Erro ao buscar origem.", { status: 502 });
   }
 
-  // 🔐 Garante que metadata é sempre definido
+   // 🔐 Garante que metadata é sempre definido
   const safeMeta = metadata || {};
   safeMeta.title = safeMeta.title || "";
   safeMeta.description = safeMeta.description || "";
   safeMeta.image = safeMeta.image || "";
 
-  // 🔧 Corrige imagem para sempre usar o proxy do domínio (evita bloqueios do GCS e Xano)
-if (safeMeta.image) {
-  const originalDomains = [
-    "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io",
-    "https://xcsx-77bw-5url.n7c.xano.io",
-    "https://storeapis.com",
-    "https://store-api.xano.io",
-    "https://api.xano.io",
-    "https://api.argologerenciadoraacervos.com.br/vault"
-  ];
+  // —— COLE AQUI: forçar proxy para imagens (evita 403/CloudFront/WhatsApp)
+  if (safeMeta.image) {
+    const originalDomains = [
+      "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io",
+      "https://xcsx-77bw-5url.n7c.xano.io",
+      "https://storeapis.com",
+      "https://store-api.xano.io",
+      "https://api.xano.io",
+      "https://api.argologerenciadoraacervos.com.br/vault"
+    ];
 
-  // detecta domínio de origem e substitui pelo proxy local
-  const match = originalDomains.find(d => safeMeta.image.includes(d));
-  if (match) {
-    safeMeta.image = safeMeta.image
-      .replace(match, "https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=")
-      .replace(/\.\.\//g, "")
-      .replace(/%2E%2E\//g, "")
-      .replace(/ /g, "%20");
+    const match = originalDomains.find(d => safeMeta.image.includes(d));
+    if (match) {
+      safeMeta.image = safeMeta.image
+        .replace(match, "https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=")
+        .replace(/\.\.\//g, "")
+        .replace(/%2E%2E\//g, "")
+        .replace(/ /g, "%20");
+    }
+
+    // Fallback: se a URL veio no formato .../vault/..., monta o proxy a partir do path
+    if (!safeMeta.image.includes("/apitmCisltK/proxy?path=")) {
+      const parts = safeMeta.image.split("/vault/");
+      if (parts.length > 1) {
+        const vaultPath = parts.slice(1).join("/vault/"); // mantém o resto após /vault/
+        safeMeta.image = `https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=${encodeURIComponent(vaultPath).replace(/%2F/g, "/")}`;
+      }
+    }
+
+    console.log("✅ Imagem corrigida para proxy:", safeMeta.image);
   }
-}
+
 
 
   // 🔍 Detecta tipo de imagem dinamicamente
