@@ -169,7 +169,6 @@ if (safeMeta.image) {
 
   // Remove ../ e espaços inseguros
   let cleanedPath = safeMeta.image
-    .replace(/%2E%2E\//g, "")
     .replace(/ /g, "%20");
 
   // Extrai apenas o trecho após /vault/
@@ -228,22 +227,6 @@ if (safeMeta.image) {
       console.log("Metadata fetched:", metadata);
 
 
-
-	   /*	
-	  // 🔧 Corrige a URL da imagem (antes de injetar no HTML)
-	  if (metadata.image) {
-	    metadata.image = metadata.image
-	      .replace(/\.\.\//g, '')      // remove "../"
-	      .replace(/\+/g, '%20');      // converte "+" para espaço seguro
-	
-	    // ✅ Se a URL não for absoluta, prefixa com o domínio do bucket do Xano
-	    if (!metadata.image.startsWith('http')) {
-	      metadata.image = 'https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/' + metadata.image;
-	    }
-	  }
-	
-	  console.log("✅ Final image URL:", metadata.image);
-	*/	
 		
       // Create a custom header handler with the fetched metadata
       const customHeaderHandler = new CustomHeaderHandler(metadata);
