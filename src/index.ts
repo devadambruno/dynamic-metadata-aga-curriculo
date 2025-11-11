@@ -117,10 +117,10 @@ async function requestMetadata(url, metaDataEndpoint) {
   		.replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
   		.replace(/<meta property="og:image".*?>/, `
     	<meta property="og:image" content="${metadata.image || ''}">
+		<meta property="og:image:secure_url" content="${metadata.image || ''}">
     	<meta property="og:image:width" content="${metadata.imageWidth || 800}">
     	<meta property="og:image:height" content="${metadata.imageHeight || 420}">
-   	 	<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">
-  		`)
+   	 	<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">`)
 		  
 	    .replace(/<meta name="twitter:title".*?>/, `<meta name="twitter:title" content="${metadata.title || ''}">`)
 	    .replace(/<meta name="twitter:description".*?>/, `<meta name="twitter:description" content="${metadata.description || ''}">`)
