@@ -92,6 +92,47 @@ async function requestMetadata(url, metaDataEndpoint) {
       });
 
       const metadata = await requestMetadata(url.pathname, patternConfig.metaDataEndpoint);
+		// Novo codigo
+
+
+		// 🟣 Se o User-Agent for de um crawler (LinkedIn, Facebook, WhatsApp), retorna HTML pré-renderizado
+	const userAgent = request.headers.get("User-Agent") || "";
+	if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.test(userAgent)) {
+	  console.log("🤖 Detected crawler bot:", userAgent);
+	
+	  // Busca o HTML original do site
+	  let html = await (await fetch(`${domainSource}${url.pathname}`)).text();
+	
+	  // Injeta as meta tags com base no metadata
+	  html = html
+	    .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${metadata.title || ''}">`)
+	    .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
+	    .replace(/<meta property="og:image".*?>/, `<meta property="og:image" content="${metadata.image || ''}">`)
+	    .replace(/<meta name="twitter:title".*?>/, `<meta name="twitter:title" content="${metadata.title || ''}">`)
+	    .replace(/<meta name="twitter:description".*?>/, `<meta name="twitter:description" content="${metadata.description || ''}">`)
+	    .replace(/<meta name="twitter:image".*?>/, `<meta name="twitter:image" content="${metadata.image || ''}">`);
+	
+	  // Adiciona fallback se as tags não existirem
+	  if (!html.includes('og:title'))
+	    html = html.replace("</head>", `<meta property="og:title" content="${metadata.title || ''}">\n</head>`);
+	  if (!html.includes('og:description'))
+	    html = html.replace("</head>", `<meta property="og:description" content="${metadata.description || ''}">\n</head>`);
+	  if (!html.includes('og:image'))
+	    html = html.replace("</head>", `<meta property="og:image" content="${metadata.image || ''}">\n</head>`);
+	
+	  // Retorna HTML renderizado diretamente para o bot
+	  return new Response(html, {
+	    status: 200,
+	    headers: { "Content-Type": "text/html; charset=UTF-8" }
+	  });
+	}
+
+
+
+		// fim
+
+
+		
       console.log("Metadata fetched:", metadata);
 
 
