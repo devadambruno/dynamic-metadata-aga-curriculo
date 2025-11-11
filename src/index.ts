@@ -196,27 +196,33 @@ if (safeMeta.image) {
   else if (lowerImage.endsWith(".gif")) safeMeta.imageType = "image/gif";
   else safeMeta.imageType = "image/jpeg";
 
-  // Injeta meta tags com segurança
-  try {
-    html = html
-  .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${safeMeta.title}">`)
-  .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${safeMeta.description}">`)
-  .replace(/<meta property="og:image".*?>/, `
-    <meta property="og:image" content="${safeMeta.image}">
-    <meta property="og:image:secure_url" content="${safeMeta.image}">
-    <meta property="og:image:width" content="800">
-    <meta property="og:image:height" content="420">
-    <meta property="og:image:type" content="${safeMeta.imageType}">
-  `)
-  // adiciona og:url e fb:app_id
-  .replace(/<\/head>/i, `
-    <meta property="og:url" content="${url.href}">
-    <meta property="fb:app_id" content="">
-  </head>`);
-
-  } catch (err) {
-    console.log("⚠️ Erro ao injetar meta tags:", err);
+// Injeta meta tags com segurança
+try {
+  // 🧼 Remove query string da imagem (WhatsApp não gosta de '?')
+  if (safeMeta.image && safeMeta.image.includes("?")) {
+    safeMeta.image = safeMeta.image.split("?")[0];
   }
+
+  html = html
+    .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${safeMeta.title}">`)
+    .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${safeMeta.description}">`)
+    .replace(/<meta property="og:image".*?>/, `
+      <meta property="og:image" content="${safeMeta.image}">
+      <meta property="og:image:secure_url" content="${safeMeta.image}">
+      <meta property="og:image:width" content="800">
+      <meta property="og:image:height" content="420">
+      <meta property="og:image:type" content="${safeMeta.imageType}">
+    `)
+    // 🔗 Adiciona og:url, og:type e og:site_name antes do fechamento do </head>
+    .replace(/<\/head>/i, `
+      <meta property="og:url" content="${url.href}">
+      <meta property="og:type" content="website">
+      <meta property="og:site_name" content="Argo Log Gerenciadora de Acervos">
+    </head>`);
+} catch (err) {
+  console.log("⚠️ Erro ao injetar meta tags:", err);
+}
+
 
   return new Response(html, {
     status: 200,
