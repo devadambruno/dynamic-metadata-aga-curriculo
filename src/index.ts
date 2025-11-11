@@ -240,13 +240,21 @@ try {
 
 
 		
-      // Create a custom header handler with the fetched metadata
-      const customHeaderHandler = new CustomHeaderHandler(metadata);
+ // 🧠 Detecta se é bot (crawler) ou visitante humano
+	const isCrawler = /facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.test(
+	  request.headers.get("User-Agent") || ""
+	);
+	
+	if (isCrawler) {
+	  const customHeaderHandler = new CustomHeaderHandler(metadata);
+	  return new HTMLRewriter()
+	    .on('*', customHeaderHandler)
+	    .transform(source);
+	}
+	
+	// ✅ Usuário normal — retorna o conteúdo original sem alteração
+	return source;
 
-      // Transform the source HTML with the custom headers
-      return new HTMLRewriter()
-        .on('*', customHeaderHandler)
-        .transform(source);
 
     // Handle page data requests for the WeWeb app
     } else if (isPageData(url.pathname)) {
