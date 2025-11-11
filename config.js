@@ -23,7 +23,7 @@ export const config = {
 
       // Placeholder do parâmetro DEVE bater exatamente com o nome usado no WeWeb
       metaDataEndpoint:
-        "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/{paramuser}/metadata"
+        "https://api.argologerenciadoraacervos.com.br/api:tmCisItK/usercurriculo/metadata/usuario?paramuserVAR={paramCurriculo}"
     }
   ]
 };
