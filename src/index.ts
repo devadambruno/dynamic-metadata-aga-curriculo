@@ -176,7 +176,7 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
     const match = originalDomains.find(d => safeMeta.image.includes(d));
     if (match) {
       safeMeta.image = safeMeta.image
-        .replace(match, "https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=")
+        .replace(match, "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/vault/")
         .replace(/\.\.\//g, "")
         .replace(/%2E%2E\//g, "")
         .replace(/ /g, "%20");
@@ -187,7 +187,7 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
       const parts = safeMeta.image.split("/vault/");
       if (parts.length > 1) {
         const vaultPath = parts.slice(1).join("/vault/"); // mantém o resto após /vault/
-        safeMeta.image = `https://api.argologerenciadoraacervos.com.br/apitmCisltK/proxy?path=${encodeURIComponent(vaultPath).replace(/%2F/g, "/")}`;
+        safeMeta.image = `https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/vault/{encodeURIComponent(vaultPath).replace(/%2F/g, "/")}`;
       }
     }
 
