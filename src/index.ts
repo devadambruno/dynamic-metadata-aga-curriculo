@@ -14,6 +14,39 @@ export default {
     const url = new URL(request.url);
     const referer = request.headers.get('Referer')
 
+	  // 🖼️ Proxy de imagens (para corrigir 405 Not Allowed do Xano)
+	if (url.pathname.startsWith("/image-proxy/")) {
+	  const targetPath = url.pathname.replace("/image-proxy/", ""); // remove prefixo
+	  const targetUrl = "https://api.argologerenciadoraacervos.com.br/" + targetPath;
+	
+	  console.log("🪄 Servindo imagem proxy:", targetUrl);
+	
+	  try {
+	    const imageResponse = await fetch(targetUrl, {
+	      method: "GET",
+	      headers: { "Accept": "image/jpeg" }
+	    });
+	
+	    if (!imageResponse.ok) {
+	      console.log("⚠️ Erro ao buscar imagem:", imageResponse.status);
+	      return new Response("Erro ao carregar imagem.", { status: 502 });
+	    }
+	
+	    // ✅ Retorna diretamente a imagem, com cabeçalhos adequados
+	    return new Response(imageResponse.body, {
+	      status: 200,
+	      headers: {
+	        "Content-Type": "image/jpeg",
+	        "Cache-Control": "public, max-age=86400",
+	      },
+	    });
+	  } catch (err) {
+	    console.log("❌ Falha no proxy de imagem:", err);
+	    return new Response("Erro interno no proxy.", { status: 500 });
+	  }
+	}
+
+
 	 /* // 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
     if (url.searchParams.has("origin")) {
       console.log("Bypass ativo — retornando conteúdo original da WeWeb");
