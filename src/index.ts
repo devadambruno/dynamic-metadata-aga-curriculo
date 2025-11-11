@@ -199,15 +199,21 @@ if (safeMeta.image) {
   // Injeta meta tags com segurança
   try {
     html = html
-      .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${safeMeta.title}">`)
-      .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${safeMeta.description}">`)
-      .replace(/<meta property="og:image".*?>/, `
-        <meta property="og:image" content="${safeMeta.image}">
-        <meta property="og:image:secure_url" content="${safeMeta.image}">
-        <meta property="og:image:width" content="800">
-        <meta property="og:image:height" content="420">
-        <meta property="og:image:type" content="${safeMeta.imageType}">
-      `);
+  .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${safeMeta.title}">`)
+  .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${safeMeta.description}">`)
+  .replace(/<meta property="og:image".*?>/, `
+    <meta property="og:image" content="${safeMeta.image}">
+    <meta property="og:image:secure_url" content="${safeMeta.image}">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="420">
+    <meta property="og:image:type" content="${safeMeta.imageType}">
+  `)
+  // adiciona og:url e fb:app_id
+  .replace(/<\/head>/i, `
+    <meta property="og:url" content="${url.href}">
+    <meta property="fb:app_id" content="">
+  </head>`);
+
   } catch (err) {
     console.log("⚠️ Erro ao injetar meta tags:", err);
   }
