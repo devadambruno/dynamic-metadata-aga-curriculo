@@ -17,10 +17,14 @@ export default {
 
 	     // 🖼️ Proxy de imagem (corrige bloqueios do Xano, Cloudflare e WhatsApp)
   if (url.pathname.startsWith("/shareimg/")) {
-    const rawPath = url.pathname.replace("/shareimg/", "").replace(/^\/+/, "");
+  const rawPath = url.pathname
+  .replace("/shareimg/", "")
+  .replace(/^\/+/, "")
+  .replace(/\.\.\//g, "__"); // <- troca todos os "../" por "__"
 
-    // codifica apenas espaços e caracteres perigosos
-    const safePath = rawPath.replace(/ /g, "%20");
+// codifica espaços e caracteres perigosos
+const safePath = rawPath.replace(/ /g, "%20");
+	
     const targetUrl = `https://api.argologerenciadoraacervos.com.br/vault/${safePath}`;
 
     console.log("🔗 Proxying image from Xano API:", targetUrl);
@@ -230,7 +234,6 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
       console.log("Metadata fetched:", metadata);
 
 
-	console.log("Metadata fetched:", metadata);
 
 	   /*	
 	  // 🔧 Corrige a URL da imagem (antes de injetar no HTML)
