@@ -15,6 +15,44 @@ export default {
     const referer = request.headers.get('Referer')
 
 
+	   // 🖼️ Proxy para imagens hospedadas no Xano (corrige bloqueios do Cloudflare e WhatsApp)
+  if (url.pathname.startsWith("/shareimg/")) {
+    const rawPath = url.pathname.replace("/shareimg/", "").replace(/^\/+/, "");
+    const encodedPath = encodeURIComponent(rawPath); // codifica ../ e espaços
+    const targetUrl = `https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/${encodedPath}`;
+
+    console.log("🔗 Proxying image from:", targetUrl);
+
+    try {
+      const imageResponse = await fetch(targetUrl, {
+        method: "GET",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; ArgologerenciadoraBot/1.0)",
+          "Accept": "image/*"
+        }
+      });
+
+      if (!imageResponse.ok) {
+        console.log("⚠️ Erro ao buscar imagem:", imageResponse.status);
+        return new Response("Erro ao buscar imagem", { status: imageResponse.status });
+      }
+
+      return new Response(imageResponse.body, {
+        status: 200,
+        headers: {
+          "Content-Type": imageResponse.headers.get("Content-Type") || "image/jpeg",
+          "Cache-Control": "public, max-age=86400",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    } catch (err) {
+      console.log("❌ Erro no proxy:", err);
+      return new Response("Erro interno no proxy de imagem", { status: 500 });
+    }
+  }
+ 
+
+
 	// 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
     if (url.searchParams.has("origin")) {
       console.log("Bypass ativo — retornando conteúdo original da WeWeb");
