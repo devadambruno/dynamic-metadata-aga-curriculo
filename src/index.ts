@@ -95,12 +95,6 @@ async function requestMetadata(url, metaDataEndpoint) {
       const metadata = await requestMetadata(url.pathname, patternConfig.metaDataEndpoint);
 		// Novo codigo
 
-		if (metadata.image) {
-		  // remove domínio do Xano
-		  const relativePath = metadata.image.replace("https://api.argologerenciadoraacervos.com.br/", "");
-		  metadata.image = `https://www.argologerenciadoraacervos.com.br/image-proxy/${relativePath}`;
-		  metadata.imageSecure = metadata.image; // adiciona também o secure_url
-		}
 		
 
 		// 🟣 Se o User-Agent for de um crawler (LinkedIn, Facebook, WhatsApp), retorna HTML pré-renderizado
