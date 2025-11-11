@@ -169,7 +169,6 @@ if (safeMeta.image) {
 
   // Remove ../ e espaços inseguros
   let cleanedPath = safeMeta.image
-    .replace(/\.\.\//g, "")
     .replace(/%2E%2E\//g, "")
     .replace(/ /g, "%20");
 
