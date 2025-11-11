@@ -395,25 +395,36 @@ class CustomHeaderHandler {
       }
     }
 
-    // ✅ Se o HTML não tinha as metas OG, injeta manualmente antes do fechamento de </head>
-    if (element.tagName === "head") {
-      element.append(`
-        <meta property="og:title" content="${this.metadata.title}">
-        <meta property="og:description" content="${this.metadata.description}">
-        <meta property="og:image" content="${this.metadata.image}">
-        <meta property="og:image:secure_url" content="${this.metadata.image}">
-        <meta property="og:image:width" content="800">
-        <meta property="og:image:height" content="420">
-        <meta property="og:image:type" content="image/jpeg">
-        <meta property="og:url" content="${this.metadata.url || ""}">
-        <meta property="og:type" content="website">
-        <meta property="og:site_name" content="Argo Log Gerenciadora de Acervos">
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="${this.metadata.title}">
-        <meta name="twitter:description" content="${this.metadata.description}">
-        <meta name="twitter:image" content="${this.metadata.image}">
-      `, { html: true });
-    }
+   if (element.tagName === "head") {
+  // 🔍 Detecta tipo da imagem dinamicamente pela extensão
+  let imageType = "image/jpeg";
+  if (this.metadata.image) {
+    const lower = this.metadata.image.toLowerCase();
+    if (lower.endsWith(".png")) imageType = "image/png";
+    else if (lower.endsWith(".webp")) imageType = "image/webp";
+    else if (lower.endsWith(".gif")) imageType = "image/gif";
+    else if (lower.endsWith(".svg")) imageType = "image/svg+xml";
+    else if (lower.endsWith(".avif")) imageType = "image/avif";
+  }
+
+  element.append(`
+    <meta property="og:title" content="${this.metadata.title}">
+    <meta property="og:description" content="${this.metadata.description}">
+    <meta property="og:image" content="${this.metadata.image}">
+    <meta property="og:image:secure_url" content="${this.metadata.image}">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="420">
+    <meta property="og:image:type" content="${imageType}">
+    <meta property="og:url" content="${this.metadata.url || ""}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Argo Log Gerenciadora de Acervos">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${this.metadata.title}">
+    <meta name="twitter:description" content="${this.metadata.description}">
+    <meta name="twitter:image" content="${this.metadata.image}">
+  `, { html: true });
+}
+
   }
 }
 
