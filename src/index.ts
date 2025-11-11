@@ -317,42 +317,44 @@ try {
 };
 
 // CustomHeaderHandler class to modify HTML content based on metadata
+// CustomHeaderHandler class to modify HTML content based on metadata
 class CustomHeaderHandler {
   constructor(metadata) {
     this.metadata = metadata;
   }
 
   element(element) {
-    // Replace the <title> tag content
-    if (element.tagName == "title") {
-      console.log('Replacing title tag content');
+    // Replace <title>
+    if (element.tagName === "title" && this.metadata.title) {
       element.setInnerContent(this.metadata.title);
     }
-    // Replace meta tags content
-    if (element.tagName == "meta") {
+
+    // Atualiza <meta> existentes
+    if (element.tagName === "meta") {
       const name = element.getAttribute("name");
+      const property = element.getAttribute("property");
+      const itemprop = element.getAttribute("itemprop");
+
+      // Atualiza meta[name]
       switch (name) {
         case "title":
+        case "twitter:title":
           element.setAttribute("content", this.metadata.title);
           break;
         case "description":
+        case "twitter:description":
           element.setAttribute("content", this.metadata.description);
           break;
         case "image":
+        case "twitter:image":
           element.setAttribute("content", this.metadata.image);
           break;
         case "keywords":
           element.setAttribute("content", this.metadata.keywords);
           break;
-        case "twitter:title":
-          element.setAttribute("content", this.metadata.title);
-          break;
-        case "twitter:description":
-          element.setAttribute("content", this.metadata.description);
-          break;
       }
 
-      const itemprop = element.getAttribute("itemprop");
+      // Atualiza meta[itemprop]
       switch (itemprop) {
         case "name":
           element.setAttribute("content", this.metadata.title);
@@ -365,84 +367,54 @@ class CustomHeaderHandler {
           break;
       }
 
-      const type = element.getAttribute("property");
-      switch (type) {
+      // Atualiza meta[property] (Open Graph)
+      switch (property) {
         case "og:title":
-          console.log('Replacing og:title');
           element.setAttribute("content", this.metadata.title);
           break;
         case "og:description":
-          console.log('Replacing og:description');
           element.setAttribute("content", this.metadata.description);
           break;
         case "og:image":
-          console.log('Replacing og:image');
           element.setAttribute("content", this.metadata.image);
+          break;
+        case "og:url":
+          element.setAttribute("content", this.metadata.url || "");
+          break;
+        case "og:type":
+          element.setAttribute("content", "website");
+          break;
+        case "og:site_name":
+          element.setAttribute("content", "Argo Log Gerenciadora de Acervos");
           break;
       }
 
-      // Remove the noindex meta tag
-      const robots = element.getAttribute("name");
-      if (robots === "robots" && element.getAttribute("content") === "noindex") {
-        console.log('Removing noindex tag');
+      // Remove "noindex"
+      if (name === "robots" && element.getAttribute("content") === "noindex") {
         element.remove();
       }
-	    
+    }
+
+    // ✅ Se o HTML não tinha as metas OG, injeta manualmente antes do fechamento de </head>
+    if (element.tagName === "head") {
+      element.append(`
+        <meta property="og:title" content="${this.metadata.title}">
+        <meta property="og:description" content="${this.metadata.description}">
+        <meta property="og:image" content="${this.metadata.image}">
+        <meta property="og:image:secure_url" content="${this.metadata.image}">
+        <meta property="og:image:width" content="800">
+        <meta property="og:image:height" content="420">
+        <meta property="og:image:type" content="image/jpeg">
+        <meta property="og:url" content="${this.metadata.url || ""}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Argo Log Gerenciadora de Acervos">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="${this.metadata.title}">
+        <meta name="twitter:description" content="${this.metadata.description}">
+        <meta name="twitter:image" content="${this.metadata.image}">
+      `, { html: true });
     }
   }
 }
 
-/*
 
-export default {
-  async fetch(request, env, ctx) {
-    const domainSource = config.domainSource;
-    const patterns = config.patterns;
-    const url = new URL(request.url);
-    const pathname = url.pathname;
-
-    // Encontrar padrão
-    const patternConfig = patterns.find(p => new RegExp(p.pattern).test(pathname));
-
-    if (patternConfig) {
-      const lastSegment = pathname.replace(/\/$/, '').split('/').pop();
-      const metaUrl = patternConfig.metaDataEndpoint.replace('{paramuser}', encodeURIComponent(lastSegment));
-
-      console.log("🔗 Fetching metadata from:", metaUrl);
-      const metaResponse = await fetch(metaUrl);
-
-      if (!metaResponse.ok) {
-        console.log("❌ Metadata fetch failed:", metaResponse.status);
-        return fetch(request); // devolve original sem travar
-      }
-
-      const metadata = await metaResponse.json();
-      console.log("✅ Metadata fetched:", metadata);
-
-      // Buscar a página original
-      const originResponse = await fetch(`${domainSource}${pathname}`, request);
-      const headers = new Headers(originResponse.headers);
-      headers.delete('X-Robots-Tag');
-
-      // Reescrever HTML
-      const rewriter = new HTMLRewriter()
-        .on('title', { element: e => metadata.title && e.setInnerContent(metadata.title) })
-        .on('meta[name="description"]', { element: e => metadata.description && e.setAttribute('content', metadata.description) })
-        .on('meta[property="og:title"]', { element: e => metadata.title && e.setAttribute('content', metadata.title) })
-        .on('meta[property="og:description"]', { element: e => metadata.description && e.setAttribute('content', metadata.description) })
-        .on('meta[property="og:image"]', { element: e => metadata.image && e.setAttribute('content', metadata.image) })
-        .on('meta[name="keywords"]', { element: e => metadata.keywords && e.setAttribute('content', metadata.keywords) });
-
-      return rewriter.transform(new Response(originResponse.body, {
-        status: originResponse.status,
-        headers,
-      }));
-    }
-
-    // Caso não case, retorna conteúdo original
-    const resp = await fetch(request);
-    const modifiedHeaders = new Headers(resp.headers);
-    modifiedHeaders.delete('X-Robots-Tag');
-    return new Response(resp.body, { status: resp.status, headers: modifiedHeaders });
-  }
-}; */
