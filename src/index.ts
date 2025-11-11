@@ -131,8 +131,17 @@ async function requestMetadata(url, metaDataEndpoint) {
 	    html = html.replace("</head>", `<meta property="og:title" content="${metadata.title || ''}">\n</head>`);
 	  if (!html.includes('og:description'))
 	    html = html.replace("</head>", `<meta property="og:description" content="${metadata.description || ''}">\n</head>`);
-	  if (!html.includes('og:image'))
-	    html = html.replace("</head>", `<meta property="og:image" content="${metadata.image || ''}">\n</head>`);
+	    // Garante injeção completa das meta tags de imagem
+	  if (!html.includes('og:image')) {
+	    const imageMetaTags = `
+	      <meta property="og:image" content="${metadata.image || ''}">
+	      <meta property="og:image:width" content="${metadata.imageWidth || 800}">
+	      <meta property="og:image:height" content="${metadata.imageHeight || 420}">
+	      <meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">
+	    `;
+	    html = html.replace("</head>", `${imageMetaTags}\n</head>`);
+	  }
+
 	
 	  // Retorna HTML renderizado diretamente para o bot
 	  return new Response(html, {
