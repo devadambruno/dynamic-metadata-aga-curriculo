@@ -19,7 +19,7 @@ export const config = {
   patterns: [
     {
       // Regex que casa URLs do tipo /perfilpublico/qualquercoisa ou /perfilpublico/qualquercoisa/
-      pattern: "^/perfilpublico/[^/]+/?$",
+      pattern: "/perfilpublico/[^/]+/?$",
 
       // Placeholder do parâmetro DEVE bater exatamente com o nome usado no WeWeb
       metaDataEndpoint:
