@@ -97,79 +97,62 @@ async function requestMetadata(url, metaDataEndpoint) {
 
 		
 
-		// 🟣 Se o User-Agent for de um crawler (LinkedIn, Facebook, WhatsApp), retorna HTML pré-renderizado
-	const userAgent = request.headers.get("User-Agent") || "";
-	if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.test(userAgent)) {
-	  console.log("🤖 Detected crawler bot:", userAgent);
-	
-	  // Busca o HTML original do site
-	  let html = await (await fetch(`${domainSource}${url.pathname}`)).text();
-	
-	  // Injeta as meta tags com base no metadata
-		// Corrige o domínio e adiciona metadados de imagem
-		if (metadata.image) {
- 		 metadata.imageWidth = 800;
- 		 metadata.imageHeight = 420;
-  		 
-		}
+// 🟣 Se o User-Agent for de um crawler (LinkedIn, Facebook, WhatsApp), retorna HTML pré-renderizado
+const userAgent = request.headers.get("User-Agent") || "";
+if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.test(userAgent)) {
+  console.log("🤖 Detected crawler bot:", userAgent);
 
+  // Evita loop do Cloudflare adicionando ?origin=bypass
+  let html;
+  try {
+    html = await (await fetch(`${domainSource}${url.pathname}?origin=bypass`)).text();
+  } catch (err) {
+    console.log("❌ Erro ao buscar HTML da origem:", err);
+    return new Response("Erro ao buscar origem.", { status: 502 });
+  }
 
-		if (imageUrl.endsWith(".png")) {
-	    metadata.imageType = "image/png";
-	  } else if (imageUrl.endsWith(".webp")) {
-	    metadata.imageType = "image/webp";
-	  } else if (imageUrl.endsWith(".gif")) {
-	    metadata.imageType = "image/gif";
-	  } else if (imageUrl.endsWith(".svg")) {
-	    metadata.imageType = "image/svg+xml";
-	  } else {
-	    metadata.imageType = "image/jpeg"; // fallback padrão
-	  }
+  // 🔐 Garante que metadata é sempre definido
+  const safeMeta = metadata || {};
+  safeMeta.title = safeMeta.title || "";
+  safeMeta.description = safeMeta.description || "";
+  safeMeta.image = safeMeta.image || "";
 
-		
-	  html = html
-	    .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${metadata.title || ''}">`)
-  		.replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
-  		.replace(/<meta property="og:image".*?>/,
-		`<meta property="og:image" content="${metadata.image || ''}">
-		<meta property="og:image:secure_url" content="${metadata.imageSecure || metadata.image || ''}">
-		<meta property="og:image:width" content="${metadata.imageWidth || 800}">
-		<meta property="og:image:height" content="${metadata.imageHeight || 420}">
-		<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">`)
+  // 🔧 Corrige imagem do domínio bloqueado para GCS
+  if (safeMeta.image.includes("api.argologerenciadoraacervos.com.br")) {
+    safeMeta.image = safeMeta.image.replace(
+      "https://api.argologerenciadoraacervos.com.br",
+      "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io"
+    );
+  }
 
-		  
-	    .replace(/<meta name="twitter:title".*?>/, `<meta name="twitter:title" content="${metadata.title || ''}">`)
-	    .replace(/<meta name="twitter:description".*?>/, `<meta name="twitter:description" content="${metadata.description || ''}">`)
-	    .replace(/<meta name="twitter:image".*?>/, `<meta name="twitter:image" content="${metadata.image || ''}">`);
-	
-	  // Adiciona fallback se as tags não existirem
-	  if (!html.includes('og:title'))
-	    html = html.replace("</head>", `<meta property="og:title" content="${metadata.title || ''}">\n</head>`);
-	  if (!html.includes('og:description'))
-	    html = html.replace("</head>", `<meta property="og:description" content="${metadata.description || ''}">\n</head>`);
-	    // Garante injeção completa das meta tags de imagem
-		
-		// Remove possíveis versões antigas
-		html = html.replace(/<meta property="og:image(:width|:height|:type)?".*?>/g, "");
-		// Remove possíveis versões antigas de og:image
-		html = html.replace(/<meta property="og:image(:secure_url|:width|:height|:type)?".*?>/g, "");
+  // 🔍 Detecta tipo de imagem dinamicamente
+  const lowerImage = safeMeta.image.toLowerCase();
+  if (lowerImage.endsWith(".png")) safeMeta.imageType = "image/png";
+  else if (lowerImage.endsWith(".webp")) safeMeta.imageType = "image/webp";
+  else if (lowerImage.endsWith(".gif")) safeMeta.imageType = "image/gif";
+  else safeMeta.imageType = "image/jpeg";
 
-		// Injeta os metadados completos de imagem logo antes do </head>
-		const imageMetaTags = `
-		<meta property="og:image" content="${metadata.image || ''}">
-		<meta property="og:image:width" content="${metadata.imageWidth || 800}">
-		<meta property="og:image:height" content="${metadata.imageHeight || 420}">
-		<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">
-		`;
-		html = html.replace(/<\/head>/i, `${imageMetaTags}\n</head>`);
+  // Injeta meta tags com segurança
+  try {
+    html = html
+      .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${safeMeta.title}">`)
+      .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${safeMeta.description}">`)
+      .replace(/<meta property="og:image".*?>/, `
+        <meta property="og:image" content="${safeMeta.image}">
+        <meta property="og:image:secure_url" content="${safeMeta.image}">
+        <meta property="og:image:width" content="800">
+        <meta property="og:image:height" content="420">
+        <meta property="og:image:type" content="${safeMeta.imageType}">
+      `);
+  } catch (err) {
+    console.log("⚠️ Erro ao injetar meta tags:", err);
+  }
 
-	
-	  // Retorna HTML renderizado diretamente para o bot
-	  return new Response(html, {
-	    status: 200,
-	    headers: { "Content-Type": "text/html; charset=UTF-8" }
-	  });
-	}
+  return new Response(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=UTF-8" },
+  });
+}
 
 
 
