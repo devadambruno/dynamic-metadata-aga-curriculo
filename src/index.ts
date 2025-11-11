@@ -15,13 +15,15 @@ export default {
     const referer = request.headers.get('Referer')
 
 
-	   // 🖼️ Proxy para imagens hospedadas no Xano (corrige bloqueios do Cloudflare e WhatsApp)
+	     // 🖼️ Proxy de imagem (corrige bloqueios do Xano, Cloudflare e WhatsApp)
   if (url.pathname.startsWith("/shareimg/")) {
     const rawPath = url.pathname.replace("/shareimg/", "").replace(/^\/+/, "");
-    const encodedPath = encodeURIComponent(rawPath); // codifica ../ e espaços
-    const targetUrl = `https://api.argologerenciadoraacervos.com.br/vault/${encodedPath}`;
 
-    console.log("🔗 Proxying image from:", targetUrl);
+    // codifica apenas espaços e caracteres perigosos
+    const safePath = rawPath.replace(/ /g, "%20");
+    const targetUrl = `https://api.argologerenciadoraacervos.com.br/vault/${safePath}`;
+
+    console.log("🔗 Proxying image from Xano API:", targetUrl);
 
     try {
       const imageResponse = await fetch(targetUrl, {
@@ -34,7 +36,7 @@ export default {
 
       if (!imageResponse.ok) {
         console.log("⚠️ Erro ao buscar imagem:", imageResponse.status);
-        return new Response("Erro ao buscar imagem", { status: imageResponse.status });
+        return new Response(`Erro ao buscar imagem (${imageResponse.status})`, { status: imageResponse.status });
       }
 
       return new Response(imageResponse.body, {
@@ -50,6 +52,7 @@ export default {
       return new Response("Erro interno no proxy de imagem", { status: 500 });
     }
   }
+
  
 
 
