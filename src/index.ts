@@ -104,10 +104,24 @@ async function requestMetadata(url, metaDataEndpoint) {
 	  let html = await (await fetch(`${domainSource}${url.pathname}`)).text();
 	
 	  // Injeta as meta tags com base no metadata
+		// Corrige o domínio e adiciona metadados de imagem
+		if (metadata.image) {
+ 		 metadata.imageWidth = 800;
+ 		 metadata.imageHeight = 420;
+  		 metadata.imageType = "image/jpeg";
+		}
+
+		
 	  html = html
 	    .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${metadata.title || ''}">`)
-	    .replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
-	    .replace(/<meta property="og:image".*?>/, `<meta property="og:image" content="${metadata.image || ''}">`)
+  		.replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
+  		.replace(/<meta property="og:image".*?>/, `
+    	<meta property="og:image" content="${metadata.image || ''}">
+    	<meta property="og:image:width" content="${metadata.imageWidth || 800}">
+    	<meta property="og:image:height" content="${metadata.imageHeight || 420}">
+   	 	<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">
+  		`)
+		  
 	    .replace(/<meta name="twitter:title".*?>/, `<meta name="twitter:title" content="${metadata.title || ''}">`)
 	    .replace(/<meta name="twitter:description".*?>/, `<meta name="twitter:description" content="${metadata.description || ''}">`)
 	    .replace(/<meta name="twitter:image".*?>/, `<meta name="twitter:image" content="${metadata.image || ''}">`);
