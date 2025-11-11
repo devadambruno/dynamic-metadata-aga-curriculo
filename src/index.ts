@@ -124,6 +124,13 @@ async function requestMetadata(url, metaDataEndpoint) {
       const metadata = await requestMetadata(url.pathname, patternConfig.metaDataEndpoint);
 		// Novo codigo
 
+		if (metadata.image) {
+		  // remove domínio do Xano
+		  const relativePath = metadata.image.replace("https://api.argologerenciadoraacervos.com.br/", "");
+		  metadata.image = `https://www.argologerenciadoraacervos.com.br/image-proxy/${relativePath}`;
+		  metadata.imageSecure = metadata.image; // adiciona também o secure_url
+		}
+		
 
 		// 🟣 Se o User-Agent for de um crawler (LinkedIn, Facebook, WhatsApp), retorna HTML pré-renderizado
 	const userAgent = request.headers.get("User-Agent") || "";
@@ -145,12 +152,13 @@ async function requestMetadata(url, metaDataEndpoint) {
 	  html = html
 	    .replace(/<meta property="og:title".*?>/, `<meta property="og:title" content="${metadata.title || ''}">`)
   		.replace(/<meta property="og:description".*?>/, `<meta property="og:description" content="${metadata.description || ''}">`)
-  		.replace(/<meta property="og:image".*?>/, `
-    	<meta property="og:image" content="${metadata.image || ''}">
-		<meta property="og:image:secure_url" content="${metadata.image || ''}">
-    	<meta property="og:image:width" content="${metadata.imageWidth || 800}">
-    	<meta property="og:image:height" content="${metadata.imageHeight || 420}">
-   	 	<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">`)
+  		.replace(/<meta property="og:image".*?>/,
+		`<meta property="og:image" content="${metadata.image || ''}">
+		<meta property="og:image:secure_url" content="${metadata.imageSecure || metadata.image || ''}">
+		<meta property="og:image:width" content="${metadata.imageWidth || 800}">
+		<meta property="og:image:height" content="${metadata.imageHeight || 420}">
+		<meta property="og:image:type" content="${metadata.imageType || 'image/jpeg'}">`)
+
 		  
 	    .replace(/<meta name="twitter:title".*?>/, `<meta name="twitter:title" content="${metadata.title || ''}">`)
 	    .replace(/<meta name="twitter:description".*?>/, `<meta name="twitter:description" content="${metadata.description || ''}">`)
@@ -165,7 +173,9 @@ async function requestMetadata(url, metaDataEndpoint) {
 		
 		// Remove possíveis versões antigas
 		html = html.replace(/<meta property="og:image(:width|:height|:type)?".*?>/g, "");
-		
+		// Remove possíveis versões antigas de og:image
+		html = html.replace(/<meta property="og:image(:secure_url|:width|:height|:type)?".*?>/g, "");
+
 		// Injeta os metadados completos de imagem logo antes do </head>
 		const imageMetaTags = `
 		<meta property="og:image" content="${metadata.image || ''}">
