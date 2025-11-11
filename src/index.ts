@@ -163,36 +163,31 @@ if (/facebookexternalhit|LinkedInBot|WhatsApp|Slackbot|Twitterbot|TelegramBot/i.
   safeMeta.image = safeMeta.image || "";
 
   // —— COLE AQUI: forçar proxy para imagens (evita 403/CloudFront/WhatsApp)
-  if (safeMeta.image) {
-    const originalDomains = [
-      "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io",
-      "https://xcsx-77bw-5url.n7c.xano.io",
-      "https://storeapis.com",
-      "https://store-api.xano.io",
-      "https://api.xano.io",
-      "https://api.argologerenciadoraacervos.com.br/vault"
-    ];
+  // —— Corrige e força domínio fixo do Google Storage
+if (safeMeta.image) {
+  console.log("🧩 Imagem original recebida:", safeMeta.image);
 
-    const match = originalDomains.find(d => safeMeta.image.includes(d));
-    if (match) {
-      safeMeta.image = safeMeta.image
-        .replace(match, "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/vault/")
-        .replace(/\.\.\//g, "")
-        .replace(/%2E%2E\//g, "")
-        .replace(/ /g, "%20");
-    }
+  // Remove ../ e espaços inseguros
+  let cleanedPath = safeMeta.image
+    .replace(/\.\.\//g, "")
+    .replace(/%2E%2E\//g, "")
+    .replace(/ /g, "%20");
 
-    // Fallback: se a URL veio no formato .../vault/..., monta o proxy a partir do path
-    if (!safeMeta.image.includes("/apitmCisltK/proxy?path=")) {
-      const parts = safeMeta.image.split("/vault/");
-      if (parts.length > 1) {
-        const vaultPath = parts.slice(1).join("/vault/"); // mantém o resto após /vault/
-        safeMeta.image = `https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/vault/{encodeURIComponent(vaultPath).replace(/%2F/g, "/")}`;
-      }
-    }
-
-    console.log("✅ Imagem corrigida para proxy:", safeMeta.image);
+  // Extrai apenas o trecho após /vault/
+  const vaultIndex = cleanedPath.indexOf("/vault/");
+  if (vaultIndex !== -1) {
+    cleanedPath = cleanedPath.substring(vaultIndex + "/vault/".length);
+  } else if (cleanedPath.startsWith("vault/")) {
+    cleanedPath = cleanedPath.substring("vault/".length);
   }
+
+  // Monta a URL final fixa para o domínio GCS
+  const baseVaultUrl = "https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/vault/";
+  safeMeta.image = baseVaultUrl + cleanedPath;
+
+  console.log("✅ Imagem reescrita:", safeMeta.image);
+}
+
 
 
 
