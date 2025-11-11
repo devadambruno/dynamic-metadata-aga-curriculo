@@ -14,35 +14,6 @@ export default {
     const url = new URL(request.url);
     const referer = request.headers.get('Referer')
 
-	  // 🖼️ Proxy de imagem para o WhatsApp (corrige 405 do Xano)
-	if (url.pathname.startsWith("/image-proxy/")) {
-	  const targetPath = url.pathname.replace("/image-proxy/", "");
-	  const targetUrl = "https://api.argologerenciadoraacervos.com.br/" + targetPath;
-	
-	  console.log("🪄 Servindo imagem via proxy:", targetUrl);
-	
-	  try {
-	    const imageResponse = await fetch(targetUrl, { method: "GET" });
-	    if (!imageResponse.ok) {
-	      console.log("⚠️ Erro ao buscar imagem:", imageResponse.status);
-	      return new Response("Erro ao carregar imagem.", { status: 502 });
-	    }
-	
-	    // ✅ Retorna a imagem com headers corretos
-	    return new Response(imageResponse.body, {
-	      status: 200,
-	      headers: {
-	        "Content-Type": imageResponse.headers.get("Content-Type") || "image/jpeg",
-	        "Cache-Control": "public, max-age=86400", // 1 dia
-	        "Access-Control-Allow-Origin": "*",
-	      },
-	    });
-	  } catch (err) {
-	    console.log("❌ Falha no proxy:", err);
-	    return new Response("Erro interno no proxy.", { status: 500 });
-	  }
-	}
-
 
 	 /* // 🟢 BYPASS para evitar loop quando o parâmetro ?origin=bypass estiver presente
     if (url.searchParams.has("origin")) {
@@ -145,8 +116,21 @@ async function requestMetadata(url, metaDataEndpoint) {
 		if (metadata.image) {
  		 metadata.imageWidth = 800;
  		 metadata.imageHeight = 420;
-  		 metadata.imageType = "image/jpeg";
+  		 
 		}
+
+
+		if (imageUrl.endsWith(".png")) {
+	    metadata.imageType = "image/png";
+	  } else if (imageUrl.endsWith(".webp")) {
+	    metadata.imageType = "image/webp";
+	  } else if (imageUrl.endsWith(".gif")) {
+	    metadata.imageType = "image/gif";
+	  } else if (imageUrl.endsWith(".svg")) {
+	    metadata.imageType = "image/svg+xml";
+	  } else {
+	    metadata.imageType = "image/jpeg"; // fallback padrão
+	  }
 
 		
 	  html = html
