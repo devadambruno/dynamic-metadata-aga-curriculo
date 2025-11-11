@@ -14,34 +14,31 @@ export default {
     const url = new URL(request.url);
     const referer = request.headers.get('Referer')
 
-	  // 🖼️ Proxy de imagens (para corrigir 405 Not Allowed do Xano)
+	  // 🖼️ Proxy de imagem para o WhatsApp (corrige 405 do Xano)
 	if (url.pathname.startsWith("/image-proxy/")) {
-	  const targetPath = url.pathname.replace("/image-proxy/", ""); // remove prefixo
+	  const targetPath = url.pathname.replace("/image-proxy/", "");
 	  const targetUrl = "https://api.argologerenciadoraacervos.com.br/" + targetPath;
 	
-	  console.log("🪄 Servindo imagem proxy:", targetUrl);
+	  console.log("🪄 Servindo imagem via proxy:", targetUrl);
 	
 	  try {
-	    const imageResponse = await fetch(targetUrl, {
-	      method: "GET",
-	      headers: { "Accept": "image/jpeg" }
-	    });
-	
+	    const imageResponse = await fetch(targetUrl, { method: "GET" });
 	    if (!imageResponse.ok) {
 	      console.log("⚠️ Erro ao buscar imagem:", imageResponse.status);
 	      return new Response("Erro ao carregar imagem.", { status: 502 });
 	    }
 	
-	    // ✅ Retorna diretamente a imagem, com cabeçalhos adequados
+	    // ✅ Retorna a imagem com headers corretos
 	    return new Response(imageResponse.body, {
 	      status: 200,
 	      headers: {
-	        "Content-Type": "image/jpeg",
-	        "Cache-Control": "public, max-age=86400",
+	        "Content-Type": imageResponse.headers.get("Content-Type") || "image/jpeg",
+	        "Cache-Control": "public, max-age=86400", // 1 dia
+	        "Access-Control-Allow-Origin": "*",
 	      },
 	    });
 	  } catch (err) {
-	    console.log("❌ Falha no proxy de imagem:", err);
+	    console.log("❌ Falha no proxy:", err);
 	    return new Response("Erro interno no proxy.", { status: 500 });
 	  }
 	}
