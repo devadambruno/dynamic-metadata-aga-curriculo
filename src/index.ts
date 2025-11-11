@@ -395,8 +395,8 @@ class CustomHeaderHandler {
       }
     }
 
-   if (element.tagName === "head") {
-  // 🔍 Detecta tipo da imagem dinamicamente pela extensão
+ if (element.tagName === "head") {
+  // 🔍 Detecta tipo da imagem dinamicamente
   let imageType = "image/jpeg";
   if (this.metadata.image) {
     const lower = this.metadata.image.toLowerCase();
@@ -407,6 +407,11 @@ class CustomHeaderHandler {
     else if (lower.endsWith(".avif")) imageType = "image/avif";
   }
 
+  // 🧹 Remove meta OG antigas do HTML
+  element.removeChild("meta[property^='og:']");
+  element.removeChild("meta[name^='twitter:']");
+
+  // ✅ Injeta novas tags OG e Twitter atualizadas
   element.append(`
     <meta property="og:title" content="${this.metadata.title}">
     <meta property="og:description" content="${this.metadata.description}">
