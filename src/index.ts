@@ -20,7 +20,7 @@ export default {
   const rawPath = url.pathname
   .replace("/shareimg/", "")
   .replace(/^\/+/, "")
-  .replace(/\.\.\//g, "__"); // <- troca todos os "../" por "__"
+
 
 // codifica espaços e caracteres perigosos
 const safePath = rawPath.replace(/ /g, "%20");
