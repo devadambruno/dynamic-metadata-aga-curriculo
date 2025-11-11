@@ -19,7 +19,7 @@ export default {
   if (url.pathname.startsWith("/shareimg/")) {
     const rawPath = url.pathname.replace("/shareimg/", "").replace(/^\/+/, "");
     const encodedPath = encodeURIComponent(rawPath); // codifica ../ e espaços
-    const targetUrl = `https://storage.googleapis.com/xcsx-77bw-5url.n7c.xano.io/${encodedPath}`;
+    const targetUrl = `https://api.argologerenciadoraacervos.com.br/vault/${encodedPath}`;
 
     console.log("🔗 Proxying image from:", targetUrl);
 
